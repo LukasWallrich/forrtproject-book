@@ -53,7 +53,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: Python - Install dependencies 
+      - name: Python - Install dependencies
         run: |
           python3 -m pip install -r ./requirements.txt
 
@@ -66,7 +66,7 @@ jobs:
           python3 content/resources/resource.py
 
       - name: Script - Move Tenzing's output and validate
-        run: | 
+        run: |
           mv scripts/forrt_contribs/tenzing.md content/contributors/tenzing.md
 
           if [ ! -f content/contributors/tenzing.md ]; then
@@ -75,7 +75,7 @@ jobs:
           fi
 
       - name: Script - Validate curated resources
-        run: | 
+        run: |
           for file in content/curated_resources/*; do
             if [ ! -f "$file" ]; then
               echo "There is a non-markdown file ( $file ) in the curated resources folder. Exiting."
@@ -85,9 +85,9 @@ jobs:
 
           NUM_FILES=$(ls -1 content/curated_resources/*.md | wc -l)
           echo "Number of curated resources: $NUM_FILES"
-    
+
       - name: Hugo - Build
-        run: | 
+        run: |
           hugo --gc --minify --cleanDestinationDir --destination public
 
       - name: Upload Artifact - Website
@@ -99,23 +99,9 @@ jobs:
           path: public/
           retention-days: 1
 
-  deploy-prod:
-    runs-on: ubuntu-22.04
-    permissions:
-      contents: write
-    needs: build
-    if: (github.event_name == 'push' || github.event_name == 'schedule') && github.ref == 'refs/heads/master' && github.event.repository.fork == false
-    steps:
-      - name: Download Arfifact - Website
-        uses: actions/download-artifact@v4
-        with:
-          name: forrt-website-${{ github.run_number }}
-          path: ${{ github.repository }}/forrt-website
-
       - name: Deploy - GitHub Pages
         uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ${{ github.repository }}/forrt-website
+          publish_dir: public/
           publish_branch: gh-pages
-          cname: forrt.org
